@@ -12,7 +12,7 @@
 比 funnel-topk 最快模式快 1.3x ~ 5.1x，且结果精确（§6）。**
 
 文中所有数字均为 2026-09-26 在本机实测，原始数据见
-`/tmp/compare_ds_funnel_20260926.json` 与 §8 产出物清单。
+`compare_ds_funnel_20260926.json` 与 §8 产出物清单。
 
 ---
 
@@ -25,7 +25,9 @@ cd /models/lkk/funnel-topk
 TORCH_CUDA_ARCH_LIST="10.3" pip install -e . --no-build-isolation   # 必须指定 sm_103！
 
 # 统一口径对比（DeepSelect 自家 kernelkit 计时框架）
-python3 /tmp/compare_ds_vs_funnel.py
+python3 benchmarks/compare_ds_vs_funnel.py
+# 正确性硬检查（索引范围/唯一性/gather 一致性/topk 条件，三方同标准）
+python3 benchmarks/verify_correctness_vs_funnel.py
 ```
 
 核心结论（bf16, K=512, Lightning Indexer 口径）：
@@ -35,7 +37,7 @@ python3 /tmp/compare_ds_vs_funnel.py
 | DeepSelect vs funnel-topk 最快模式 | **DeepSelect 快 1.27x ~ 5.08x**（24/24 全胜） |
 | DeepSelect vs torch.topk | 2.60x ~ 20.33x（与 README 复现口径一致） |
 | funnel-topk 最快模式 vs torch.topk | 0.69x ~ 5.43x（**B=6 时反而更慢**） |
-| 正确性 | DeepSelect 精确（topk 条件 24/24 通过）；funnel turbo 80.5% / fast 93.5% / standard 90.4%~100% |
+| 正确性 | DeepSelect 精确（topk 条件 9/9 配置 100% 行满足）；funnel fast/turbo **0% 行满足** topk 条件（recall 93.5% / 80.5%）；standard 在候选池充足时 100%、候选池=K 时 0%（§6.2） |
 
 ---
 
@@ -161,7 +163,7 @@ recall 趋势与其官方文档一致（turbo K=512 官方就是 80.6%，逐位�
 | 取值 | 10 runs 均值 | 100 iters 中位数 |
 | 基线硬件 | B300 | RTX 5090D |
 
-统一方案（`/tmp/compare_ds_vs_funnel.py`）：
+统一方案（[`benchmarks/compare_ds_vs_funnel.py`](../benchmarks/compare_ds_vs_funnel.py)）：
 
 - **同一计时框架**：DeepSelect 自家 `tests/kernelkit` 的 `kk.bench`
   （kineto kernel 时间 + 每迭代 8 GB L2 flush），即 README `perf_bf16.png` 的口径；
@@ -276,7 +278,36 @@ L2 flush 的 `FillFunctor`。修正后 funnel 的 copy/cast 等真实开销 kern
 - **funnel 输出 keep=TL2×32**：本矩阵 K=512 → keep=512，三方输出字节数相同，
   带宽口径无偏差。
 
-### 6.2 funnel-topk 官方 bench（wall-clock 口径）本机对照
+### 6.2 正确性硬检查（对齐 DeepSelect 测试套件的检查项）
+
+index recall@K 只是一个统计指标；DeepSelect 的测试套件（`tests/test.py`）做的是
+**逐元素硬检查**。用同一套标准检查三方（脚本
+[`benchmarks/verify_correctness_vs_funnel.py`](../benchmarks/verify_correctness_vs_funnel.py)，
+bf16，K=512，batch ∈ {6, 256, 4096} × vocab ∈ {16K, 256K, 1M}）：
+
+| 检查项 | DeepSelect | funnel standard | funnel fast | funnel turbo |
+|---|---|---|---|---|
+| 索引范围 `0 ≤ idx < N` | 9/9 通过 | 通过 | 通过 | 通过 |
+| 索引唯一（行内无重复） | 通过 | 通过 | 通过 | 通过 |
+| gather 一致（`values == input[indices]`） | 通过 | 通过 | 通过 | 通过 |
+| **topk 条件（行满足率）** | **100%（9/9 配置）** | 100% 或 **0%** | **0%** | **0%** |
+
+topk 条件 = `min(selected) ≥ max(unselected)`，即精确 top-k 的定义本身。实测细节：
+
+- **fast / turbo 在全部 9 个配置上行满足率为 0%**——每一行都至少漏掉一个真实
+  top-k 元素。recall 93.5% 听起来温和，但对 K=512 意味着平均每行漏约 33 个；
+  "recall 高"并不等于"大多数行是对的"。
+- **standard 的 topk 行满足率随候选池规模在 100% 与 0% 之间跳变**：
+  候选池充足时（B=6 全档、V≥256K 全档）100% 精确；候选池恰好=K 时
+  （B=256/4096, V=16K，`num_seg=1` → 32×16=512=K）**0%**——每个 segment 的
+  漏斗溢出都直接变成漏选。也就是说 standard 并非"近似但接近"，而是
+  "要么精确、要么每行都错"，取决于 `num_seg` 的自适应结果，调用方无法预知。
+- DeepSelect 三项健全性检查 + topk 条件全部通过，与其测试套件的
+  bitwise 结论一致。
+
+原始数据：`verify_correctness_vs_funnel.json`。
+
+### 6.3 funnel-topk 官方 bench（wall-clock 口径）本机对照
 
 `python -m benchmarks.bench_compare --device cuda`（B300，median of 100 iters，
 无 L2 flush；节选 bf16 行）：
@@ -314,11 +345,18 @@ L2 flush 的 `FillFunctor`。修正后 funnel 的 copy/cast 等真实开销 kern
 
 | 路径 | 说明 |
 |---|---|
-| `/tmp/compare_ds_vs_funnel.py` | 统一口径对比脚本（kk.bench，三方全 kernel e2e span） |
-| `/tmp/compare_ds_funnel_20260926.json` | 24 配置 × 5 方案的原始数据（µs / TB/s / recall / keep） |
+| [`benchmarks/compare_ds_vs_funnel.py`](../benchmarks/compare_ds_vs_funnel.py) | 统一口径对比脚本（kk.bench，三方全 kernel e2e span） |
+| [`benchmarks/verify_correctness_vs_funnel.py`](../benchmarks/verify_correctness_vs_funnel.py) | 正确性硬检查脚本（§6.2） |
+| [`benchmarks/parse_perf_bf16.py`](../benchmarks/parse_perf_bf16.py)、[`benchmarks/plot_perf_bf16.py`](../benchmarks/plot_perf_bf16.py) | README Lightning Indexer 复现的解析 / 出图脚本 |
+| `compare_ds_funnel_20260926.json` | 24 配置 × 5 方案的原始数据（µs / TB/s / recall / keep） |
+| `verify_correctness_vs_funnel.json` | 正确性硬检查原始数据（9 配置 × 4 方案） |
 | funnel-topk 安装 | editable install 于 muse_verify；`TORCH_CUDA_ARCH_LIST="10.3"`，编译 3 分 51 秒 |
-| 官方 bench 输出 | 见 §6.2（命令 `python -m benchmarks.bench_compare --device cuda`） |
+| 官方 bench 输出 | 见 §6.3（命令 `python -m benchmarks.bench_compare --device cuda`） |
 | 本文档 | `docs/compare-funnel-topk-20260926.zh.md` |
 
+复现脚本均已用"从仓库位置重跑"的方式验证过：对比脚本重跑 24 配置与首跑
+最大相对偏差 4.23%（µs 级小 case 抖动量级），recall 一致；解析脚本输出与
+`bf16_perf_20260926.csv` 逐行一致。
+
 仓库代码零改动（对 funnel-topk 仅做 editable install 与运行时调用；
-对 DeepSelect 未触碰任何文件）。
+对 DeepSelect 仅新增 `benchmarks/` 下复现脚本与本文档，未触碰任何已有文件）。

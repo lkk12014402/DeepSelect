@@ -1,0 +1,254 @@
+[
+ {
+  "batch": 6,
+  "vocab": 16384,
+  "deep_select": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "standard": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "fast": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "turbo": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  }
+ },
+ {
+  "batch": 6,
+  "vocab": 262144,
+  "deep_select": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "standard": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "fast": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "turbo": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  }
+ },
+ {
+  "batch": 6,
+  "vocab": 1048576,
+  "deep_select": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "standard": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "fast": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "turbo": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  }
+ },
+ {
+  "batch": 256,
+  "vocab": 16384,
+  "deep_select": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "standard": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "fast": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "turbo": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  }
+ },
+ {
+  "batch": 256,
+  "vocab": 262144,
+  "deep_select": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "standard": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "fast": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "turbo": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  }
+ },
+ {
+  "batch": 256,
+  "vocab": 1048576,
+  "deep_select": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "standard": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "fast": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "turbo": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  }
+ },
+ {
+  "batch": 4096,
+  "vocab": 16384,
+  "deep_select": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "standard": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "fast": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "turbo": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  }
+ },
+ {
+  "batch": 4096,
+  "vocab": 262144,
+  "deep_select": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "standard": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "fast": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "turbo": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  }
+ },
+ {
+  "batch": 4096,
+  "vocab": 1048576,
+  "deep_select": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "standard": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 100.0
+  },
+  "fast": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  },
+  "turbo": {
+   "index_range": true,
+   "unique_index": true,
+   "gather_consistent": true,
+   "topk_cond_row_rate": 0.0
+  }
+ }
+]

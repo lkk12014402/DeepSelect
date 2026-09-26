@@ -28,8 +28,8 @@ pip install --no-deps --force-reinstall dist/deep_select-*.whl
 CUDA_VISIBLE_DEVICES=0 python -u tests/test.py --perf-only --dtype bf16 -rf \
     | tee /tmp/perf_bf16_20260926.log
 
-python3 /tmp/parse_perf_bf16_20260926.py /tmp/perf_bf16_20260926.log ./bf16_perf_20260926.csv
-python3 /tmp/plot_perf_bf16_20260926.py ./bf16_perf_20260926.csv ./perf_bf16_repro_20260926.png
+python3 benchmarks/parse_perf_bf16.py /tmp/perf_bf16_20260926.log ./bf16_perf_20260926.csv
+python3 benchmarks/plot_perf_bf16.py ./bf16_perf_20260926.csv ./perf_bf16_repro_20260926.png
 ```
 
 本次实测结论：
@@ -162,12 +162,12 @@ CUDA_VISIBLE_DEVICES=0 python -u tests/test.py --perf-only --dtype bf16 -rf 2>&1
 
 ### 5.1 解析脚本与对拍
 
-解析脚本 `/tmp/parse_perf_bf16_20260926.py`（与首次复现文档 §7 相同，
-正则提取 `Running on TestParam(...)` / `topk : ... us, ... TB/s` /
+解析脚本 [`benchmarks/parse_perf_bf16.py`](../benchmarks/parse_perf_bf16.py)
+（正则提取 `Running on TestParam(...)` / `topk : ... us, ... TB/s` /
 `torch.topk : ... (speedup ...x)` 三类行）：
 
 ```bash
-python3 /tmp/parse_perf_bf16_20260926.py /tmp/perf_bf16_20260926.log /models/DeepSelect/bf16_perf_20260926.csv
+python3 benchmarks/parse_perf_bf16.py /tmp/perf_bf16_20260926.log /models/DeepSelect/bf16_perf_20260926.csv
 # 输出：90 cases -> /models/DeepSelect/bf16_perf_20260926.csv
 ```
 
@@ -247,10 +247,11 @@ CSV : 1024,512,1048576,256.875,4.188,3684.54,0.292,14.34             ✓
 
 ## 7. 出图脚本
 
-`/tmp/plot_perf_bf16_20260926.py`（matplotlib，Agg 后端；与首次复现文档 §8 相同）：
+[`benchmarks/plot_perf_bf16.py`](../benchmarks/plot_perf_bf16.py)（matplotlib，Agg 后端；
+与首次复现文档 §8 相同）：
 
 ```bash
-python3 /tmp/plot_perf_bf16_20260926.py ./bf16_perf_20260926.csv ./perf_bf16_repro_20260926.png
+python3 benchmarks/plot_perf_bf16.py ./bf16_perf_20260926.csv ./perf_bf16_repro_20260926.png
 ```
 
 要点：`topk=512`、`batch ∈ {6, 512, 4096}`、`vocab ∈ {16K, 64K, 128K, 256K, 512K, 1M}`，
@@ -291,7 +292,7 @@ this run: DeepSelect 0.006 ~ 5.314 TB/s, speedup 2.36x ~ 20.31x
 |---|---|
 | `/tmp/perf_bf16_20260926.log` | 90 条用例原始跑分日志，**唯一数据源** |
 | `/tmp/deepselect_bdist_20260926.log` | 构建日志（含 spill 检查：`No register spills detected.`） |
-| `/tmp/parse_perf_bf16_20260926.py`、`/tmp/plot_perf_bf16_20260926.py` | 解析 / 出图脚本 |
+| [`benchmarks/parse_perf_bf16.py`](../benchmarks/parse_perf_bf16.py)、[`benchmarks/plot_perf_bf16.py`](../benchmarks/plot_perf_bf16.py) | 解析 / 出图脚本（已收入仓库） |
 | `bf16_perf_20260926.csv` | 结构化数据（90 行 × 8 列，已对拍） |
 | `perf_bf16_repro_20260926.png` | 复刻 README 版式的图 |
 | `dist/deep_select-1.0.0+0f03b68.20260926.153723-*.whl` | 本次构建产物 |
