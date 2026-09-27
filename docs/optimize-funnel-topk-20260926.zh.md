@@ -128,6 +128,14 @@ S = min(⌈2·SM/B⌉, N/2048, 16)。结果：
 
 ## 4. 最终数据（同口径，bf16，K=512，B300）
 
+![DeepSelect vs funnel-topk (before/after opt) vs torch.topk](../perf_bf16_with_funnel_20260927.png)
+
+（图：`perf_bf16_with_funnel_20260927.png`，由
+[`benchmarks/plot_perf_bf16_with_funnel.py`](../benchmarks/plot_perf_bf16_with_funnel.py)
+生成。funnel 柱取该配置下 standard/fast/turbo 三模式的最快值；
+best-mode 归属：batch=6 大 V 时优化后从 standard 变为 fast/turbo（分段路径），
+batch≥512 大 V 时优化后 turbo 反超 fast（守卫收益）。）
+
 优化前后 funnel-best（三模式取最快）与 DeepSelect 的对照（µs）：
 
 | batch | vocab | DeepSelect | funnel-best 旧 | funnel-best 新 | 提升 | 与 DS 差距 |
@@ -235,6 +243,12 @@ python3 /models/DeepSelect/benchmarks/verify_round1_guard.py       # 守卫：re
 python3 /models/DeepSelect/benchmarks/verify_round2_segmented.py   # 分段：提速 + recall 升
 python3 /models/DeepSelect/benchmarks/verify_correctness_vs_funnel.py  # 硬检查
 python3 /models/DeepSelect/benchmarks/compare_ds_vs_funnel.py out.json # 全矩阵对比
+
+# 生成 §4 的对比图（DeepSelect / funnel 优化前 / funnel 优化后 / torch.topk）
+cd /models/DeepSelect
+python3 benchmarks/plot_perf_bf16_with_funnel.py \
+    compare_ds_funnel_20260926.json compare_ds_funnel_after_opt_20260926.json \
+    perf_bf16_with_funnel_20260927.png
 ```
 
 ## 7. 若继续优化的路径（按预期收益排序）

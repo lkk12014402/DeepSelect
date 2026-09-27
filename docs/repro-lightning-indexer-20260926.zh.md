@@ -234,6 +234,12 @@ CSV : 1024,512,1048576,256.875,4.188,3684.54,0.292,14.34             ✓
 
 ## 6. 与官方图 `assets/perf_bf16.png` 的对比
 
+> 更新（2026-09-27）：在此版式基础上增加了 funnel-topk 优化前/后的对比图
+> `perf_bf16_with_funnel_20260927.png`（DeepSelect / funnel-best 优化前 /
+> funnel-best 优化后 / torch.topk 四柱），生成脚本
+> [`benchmarks/plot_perf_bf16_with_funnel.py`](../benchmarks/plot_perf_bf16_with_funnel.py)，
+> 数据与背景见 [optimize-funnel-topk-20260926.zh.md](optimize-funnel-topk-20260926.zh.md)。
+
 官方图：3 子图分组柱状图（batch=6/512/4096），x 轴类目 16K~1M，共享 0~7 TB/s 轴，
 配色 DeepSelect=#66CCFE / torch.topk=#ED0000。本次复现图
 `perf_bf16_repro_20260926.png` 用相同版式绘制（脚本见 §7），逐点对比：
